@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">Book Manager</string>
+    <!-- Navigation screen titles -->
+    <string name="navigation_title_home">Home</string>
+    <string name="navigation_title_booklist">Book List</string>
+    <string name="navigation_title_authorlist">Author List</string>
+    <string name="navigation_title_addbook">Add Book</string>
+    <string name="navigation_title_bookdetails">Book Details</string>
+    <string name="navigation_title_authordetails">Author Details</string>
+    <string name="navigation_title_about">About</string>
+    <!-- Default Genres -->
+    <string name="default_genre_fantasy">Fantasy</string>
+    <string name="default_genre_scifi">Sci-Fi</string>
+    <string name="default_genre_romance">Romance</string>
+    <string name="default_genre_thriller">Thriller</string>
+    <string name="default_genre_horror">Horror</string>
+    <string name="default_genre_mystery">Mystery</string>
+    <string name="default_genre_literary_fiction">Literary Fiction</string>
+    <string name="default_genre_action_adventure">Action &amp; Adventure</string>
+    <string name="default_genre_historical_fiction">Historical Fiction</string>
+    <string name="default_genre_crime_fiction">Crime Fiction</string>
+    <string name="default_genre_other">Other</string>
+    <!-- Book Read State -->
+    <string name="book_read_state_not_read">Not read</string>
+    <string name="book_read_state_currently_reading">Currently reading</string>
+    <string name="book_read_state_finished">Finished</string>
+    <!-- Home Screen -->
+    <string name="homescreen_recently_updated_books">Recently updated books</string>
+    <string name="homescreen_total_books">Total books: %1$d</string>
+    <string name="homescreen_book_read_state_count">%1$s: %2$d</string>
+    <!-- Add Book Screen -->
+    <string name="addbookscreen_add_new_book">Add new book</string>
+    <string name="addbookscreen_book_title">Book title</string>
+    <string name="addbookscreen_book_author">Book author</string>
+    <string name="addbookscreen_book_genre">Genre</string>
+    <string name="addbookscreen_create">Create</string>
+    <!-- Book List Screen -->
+    <string name="booklistscreen_filter_genre">Filter by Genre</string>
+    <string name="booklistscreen_sort_by">Sort by</string>
+    <string name="booklistscreen_icon_sort_direction">Sort direction</string>
+    <!-- Book Details Screen -->
+    <string name="bookdetailsscreen_user_rating">User rating: %1$.1f*</string>
+    <string name="bookdetailsscreen_year_finished">Finished in: %1$d</string>
+    <string name="bookdetailsscreen_created_at">Created at: %1$s</string>
+    <string name="bookdetailsscreen_created_at_format">yyyy-MM-dd HH:mm:ss</string>
+    <string name="bookdetailsscreen_updated_at">Updated at: %1$s</string>
+    <string name="bookdetailsscreen_updated_at_format">yyyy-MM-dd HH:mm:ss</string>
+    <string name="bookdetailsscreen_user_rating_title">Set user rating</string>
+    <string name="bookdetailsscreen_slider_user_rating">%1$.1f*</string>
+    <string name="bookdetailsscreen_set_user_rating_button">Set rating</string>
+    <string name="bookdetailsscreen_year_read_title">Year read</string>
+    <string name="bookdetailsscreen_year_read_textfield_year">Year</string>
+    <string name="bookdetailsscreen_year_read_change_button">Change year</string>
+    <string name="bookdetailsscreen_delete_book_button">Delete book</string>
+</resources>
