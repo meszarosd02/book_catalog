@@ -383,8 +383,6 @@ fun BookReadStateSegmentedButtons(book: BookWithAuthor, onItemClick: (brs: BookR
     var selectedIndex by remember { mutableIntStateOf(book.book.bookReadState.ordinal) }
     val options = BookReadState.entries.map { stringResource(it.displayNameRes) }
 
-    Icons.Default
-
     SingleChoiceSegmentedButtonRow (
         modifier = Modifier.height(IntrinsicSize.Min).padding(bottom = 10.dp)
     ) {

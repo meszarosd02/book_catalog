@@ -2,7 +2,6 @@ package com.meszarosd.book_catalog.screen.book.list
 
 import android.util.Log
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -14,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,7 +25,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -54,6 +58,7 @@ import com.meszarosd.book_catalog.entities.Genre
 import com.meszarosd.book_catalog.iconbuttons.CurrentlyReadingIcon
 import com.meszarosd.book_catalog.iconbuttons.FinishedReadingIcon
 import com.meszarosd.book_catalog.iconbuttons.NotReadIcon
+import com.meszarosd.book_catalog.lib.SortOptions
 import com.meszarosd.book_catalog.navigation.NavigationUIState
 import com.meszarosd.book_catalog.navigation.topbar.icons.DrawerOpenIcon
 import com.meszarosd.book_catalog.navigation.topbar.icons.FilterActionIconButton
@@ -70,9 +75,9 @@ fun BookListScreen(
     viewModel: BookListViewModel = hiltViewModel()
 ){
     val state by viewModel.uiState.collectAsState()
-    val selectedGenres by viewModel.selectedGenres.collectAsState()
 
-    val bottomSheetState = rememberModalBottomSheetState()
+    val filterBottomSheetState = rememberModalBottomSheetState()
+    val sortBottomSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(null) {
@@ -80,17 +85,21 @@ fun BookListScreen(
             viewModel.fetchBooks()
             viewModel.fetchGenres()
         }
-        Log.d("BookListScreen", selectedGenres.toString())
+        Log.d("BookListScreen", state.selectedGenres.toString())
     }
     BaseScreen(
         title = stringResource(R.string.navigation_title_booklist),
         navigationUIState = navigationUIState,
         navigationIcon = { DrawerOpenIcon(navigationUIState.scope, navigationUIState.drawerState) },
         actions = {
-            SortActionIconButton(onIconClick = {})
+            SortActionIconButton(onIconClick = {
+                scope.launch{
+                    sortBottomSheetState.show()
+                }
+            })
             FilterActionIconButton(onIconClick = {
             scope.launch{
-                bottomSheetState.show()
+                filterBottomSheetState.show()
             }
         }
         )
@@ -101,26 +110,139 @@ fun BookListScreen(
         Column(modifier = Modifier
             .padding(20.dp)
             .padding(padding)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                SortBookListDropDown(viewModel)
-            }
             HorizontalDivider(modifier = Modifier.padding(top = 10.dp))
             BookListWithRefreshBox(
                 books = state.filteredBooks,
                 onRefresh = { viewModel.fetchBooks() },
                 onBookClicked = onBookClicked
             )
-            if(bottomSheetState.isVisible)
+            if(filterBottomSheetState.isVisible)
                 FilterBottomSheet(
-                    bottomSheetState = bottomSheetState,
+                    bottomSheetState = filterBottomSheetState,
                     scope = scope,
                     filterItems = state.genres,
-                    activeGenres = selectedGenres,
+                    activeGenres = state.selectedGenres,
                     onChipClick = {genre -> viewModel.toggleGenreFilter(genre)}
                 )
+            if(sortBottomSheetState.isVisible){
+                SortBottomSheet(
+                    bottomSheetState = sortBottomSheetState,
+                    scope = scope,
+                    sortOptions = state.sortOptions,
+                    isAscending = state.isAscendingSorting,
+                    setIsAscending = { isAscending ->
+                        viewModel.setIsAscending(isAscending)
+                    },
+                    selectedOption = state.selectedOption,
+                    onOptionSelected = { opt ->
+                        viewModel.setSelectedOption(opt)
+                    },
+                    applyCallback = {isAscending, selectedSort ->
+                        viewModel.setIsAscending(isAscending)
+                        viewModel.applySort(selectedSort)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SortBottomSheet(
+    modifier: Modifier = Modifier,
+    bottomSheetState: SheetState,
+    scope: CoroutineScope,
+    sortOptions: List<SortOptions<BookWithAuthor, *>>,
+    isAscending: Boolean,
+    setIsAscending: (isAscending: Boolean) -> Unit,
+    selectedOption: SortOptions<BookWithAuthor, *>,
+    onOptionSelected: (opt: SortOptions<BookWithAuthor, *>) -> Unit,
+    applyCallback: (isAscending: Boolean, selectedSort: SortOptions<BookWithAuthor, *>) -> Unit
+) {
+    val (sortExpanded, setSortExpanded) = remember{ mutableStateOf(false) }
+
+    ModalBottomSheet(
+        modifier = modifier,
+        onDismissRequest = {
+            scope.launch {
+                bottomSheetState.hide()
+            }
+        },
+        sheetState = bottomSheetState
+    ) {
+        Box(
+            modifier = Modifier.padding(10.dp).fillMaxWidth()
+        ){
+            Column{
+                Row{
+                    Text(text = "Sort items", fontSize = titleTextFontSize)
+                }
+                HorizontalDivider()
+                Row(modifier = Modifier.fillMaxWidth()){
+                    SingleChoiceSegmentedButtonRow {
+                        SegmentedButton(
+                            selected = isAscending,
+                            shape = SegmentedButtonDefaults.itemShape(
+                                0, 2
+                            ),
+                            onClick = {
+                                setIsAscending(true)
+                            },
+                            label = {Text("Ascending")}
+                        )
+                        SegmentedButton(
+                            selected = !isAscending,
+                            shape = SegmentedButtonDefaults.itemShape(
+                                1, 2
+                            ),
+                            onClick = {
+                                setIsAscending(false)
+                            },
+                            label = {Text("Descending")}
+                        )
+                    }
+                }
+                HorizontalDivider()
+                ExposedDropdownMenuBox(
+                    expanded = sortExpanded,
+                    onExpandedChange = {setSortExpanded(it)}
+                ) {
+                    OutlinedTextField(
+                        value = selectedOption.identifier,
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(sortExpanded)},
+                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = sortExpanded,
+                        onDismissRequest = {setSortExpanded(false)}
+                    ) {
+                        sortOptions.forEach { opt ->
+                            DropdownMenuItem(
+                                text = {Text(opt.identifier)},
+                                onClick = {
+                                    onOptionSelected(opt)
+                                    setSortExpanded(false)
+                                }
+                            )
+                        }
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth()){
+                    Button(
+                        onClick = {
+                            scope.launch{
+                                bottomSheetState.hide()
+                                applyCallback(isAscending, selectedOption)
+                            }
+                        }
+                    ){
+                        Text("Apply")
+                    }
+                }
+            }
         }
     }
 }
@@ -145,7 +267,9 @@ fun FilterBottomSheet(
         sheetState = bottomSheetState
     ) {
         Box(
-            modifier = Modifier.padding(10.dp).fillMaxWidth()
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth()
         ){
             Column{
                 Row{
@@ -182,9 +306,14 @@ fun BookListFilterChip(genre: Genre, activeGenres: Set<Genre>, onChipClick: () -
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SortBookListDropDown(viewModel: BookListViewModel){
+fun SortBookListDropDown(
+    sortOptions: List<SortOptions<BookWithAuthor, *>>,
+    selectedOption: SortOptions<BookWithAuthor, *>,
+    onItemClick: (SortOptions<BookWithAuthor, *>) -> Unit,
+    onArrowClick: () -> Unit,
+    isAscending: Boolean
+){
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(viewModel.sortOptions[0]) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -204,13 +333,12 @@ fun SortBookListDropDown(viewModel: BookListViewModel){
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            viewModel.sortOptions.forEach { opt ->
+            sortOptions.forEach { opt ->
                 DropdownMenuItem(
                     text = { Text(opt.identifier) },
                     onClick = {
-                        selectedOption = opt
+                        onItemClick(selectedOption)
                         expanded = false
-                        viewModel.applySort(selectedOption, viewModel.isAscendingSorting.value)
                     }
                 )
             }
@@ -218,14 +346,13 @@ fun SortBookListDropDown(viewModel: BookListViewModel){
     }
     IconButton(
         onClick = {
-            viewModel.isAscendingSorting.value = !viewModel.isAscendingSorting.value
-            viewModel.applySort(selectedOption, viewModel.isAscendingSorting.value)
+            onArrowClick()
         }
     ) {
         Icon(
             Icons.Default.KeyboardArrowDown,
             contentDescription = stringResource(R.string.booklistscreen_icon_sort_direction),
-            modifier = Modifier.rotate(if (viewModel.isAscendingSorting.value) 180f else 0f)
+            modifier = Modifier.rotate(if (isAscending) 180f else 0f)
         )
     }
 }
