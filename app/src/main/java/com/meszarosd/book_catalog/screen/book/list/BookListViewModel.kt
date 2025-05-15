@@ -24,12 +24,12 @@ class BookListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(BookListUiState())
     val uiState: StateFlow<BookListUiState> = _uiState.asStateFlow()
 
-    fun applySort(option: SortOptions<BookWithAuthor, *>){
+    fun applySort(){
         val books = _uiState.value.filteredBooks
         val sortedBooks = if(_uiState.value.isAscendingSorting){
-            books.sortedWith(compareBy(option.selector))
+            books.sortedWith(compareBy(_uiState.value.selectedOption.selector))
         } else {
-            books.sortedWith(compareByDescending(option.selector))
+            books.sortedWith(compareByDescending(_uiState.value.selectedOption.selector))
         }
 
         _uiState.update {
@@ -56,27 +56,24 @@ class BookListViewModel @Inject constructor(
     }
 
     private fun applyGenreFilter(){
-        val currentGenres = _uiState.value.selectedGenres
-        Log.d("currentGenres", currentGenres.toString())
         _uiState.update {current ->
             current.copy(
-                filteredBooks = if(currentGenres.isEmpty()){
+                filteredBooks = if(current.selectedGenres.isEmpty()){
                     current.books
                 }else{
-                    current.books.filter {it.genre in currentGenres}
+                    current.books.filter {it.genre in current.selectedGenres}
                 }
             )
         }
-        Log.d("books", _uiState.value.filteredBooks.toString())
     }
 
     fun toggleGenreFilter(genre: Genre){
         _uiState.update {
             val newSet = it.selectedGenres.toMutableSet()
-            if(genre in it.selectedGenres){
-                newSet += genre
-            }else{
+            if(genre in newSet){
                 newSet -= genre
+            }else{
+                newSet += genre
             }
             it.copy(
                 selectedGenres = newSet
@@ -97,16 +94,14 @@ class BookListViewModel @Inject constructor(
         }
     }
 
-    fun fetchGenres(){
-        viewModelScope.launch(Dispatchers.IO){
-            val fetchedGenres = bookRepository.getAllGenre()
-            _uiState.value = _uiState.value.copy(
+    suspend fun fetchGenres(){
+        val fetchedGenres = withContext(Dispatchers.IO) {
+            bookRepository.getAllGenre()
+        }
+        _uiState.update { current ->
+            current.copy(
                 genres = fetchedGenres
             )
         }
-    }
-
-    fun addBook() {
-        TODO("Not yet implemented")
     }
 }

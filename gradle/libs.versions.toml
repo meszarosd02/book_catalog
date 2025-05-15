@@ -13,6 +13,8 @@ room = "2.7.0"
 storage = "1.5.0"
 junitKtx = "1.2.1"
 roomTestingAndroid = "2.7.1"
+mockitoCore = "5.2.0"
+mockitoKotlin = "5.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +47,13 @@ room-testing = {group = "androidx.room", name = "room-testing", version.ref = "r
 androidx-storage = { group = "androidx.test.services", name = "storage", version.ref = "storage" }
 androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 androidx-room-testing-android = { group = "androidx.room", name = "room-testing-android", version.ref = "roomTestingAndroid" }
+
+#Mockito
+mockito-core = {group = "org.mockito", name = "mockito-core", version.ref = "mockitoCore"}
+mockito-kotlin = {group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin"}
+androidx-arch-core = {group = "androidx.arch.core", name = "core-testing", version = "2.2.0"}
+
+kotlin-coroutine-test = {group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version = "1.7.3"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

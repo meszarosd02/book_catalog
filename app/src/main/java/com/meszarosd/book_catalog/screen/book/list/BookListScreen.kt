@@ -139,7 +139,8 @@ fun BookListScreen(
                     },
                     applyCallback = {isAscending, selectedSort ->
                         viewModel.setIsAscending(isAscending)
-                        viewModel.applySort(selectedSort)
+                        viewModel.setSelectedOption(selectedSort)
+                        viewModel.applySort()
                     }
                 )
             }
